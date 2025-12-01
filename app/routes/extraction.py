@@ -1,197 +1,163 @@
 """
-API routes for PDF extraction.
+API routes for PDF extraction (synchronous).
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from celery.result import AsyncResult
+from fastapi import APIRouter, UploadFile, File
 
 from app.schemas.extraction import (
-    ExtractionSubmitResponse,
-    TaskStatusResponse,
+    ExtractionResponse,
     ExtractionTool,
-    TaskStatus,
-    ExtractionResult,
     ErrorResponse
 )
-from app.utils.file_handler import validate_pdf_file, save_upload_file
-from app.tasks.extraction import (
-    extract_pdf_pymupdf,
-    extract_pdf_pdfplumber,
-    extract_pdf_pypdf,
-    extract_pdf_pdfminer
-)
-from app.celery_app import celery_app
+from app.utils.file_handler import validate_pdf_file, save_upload_file, delete_file
+from app.utils.pdf_extractors import get_extractor
 
 router = APIRouter(prefix="/extract", tags=["PDF Extraction"])
 
 
 @router.post(
     "/pymupdf",
-    response_model=ExtractionSubmitResponse,
-    status_code=202,
+    response_model=ExtractionResponse,
+    status_code=200,
     summary="Extract PDF using PyMuPDF",
-    description="Submit a PDF for text extraction using PyMuPDF (fitz). "
-                "Extracts text, tables, images (with OCR), and metadata."
+    description="Extract text from PDF using PyMuPDF (fitz). "
+                "Extracts text, tables, images (with OCR), and metadata. "
+                "Returns results immediately (synchronous)."
 )
 async def extract_with_pymupdf(
     file: UploadFile = File(..., description="PDF file to extract text from")
-) -> ExtractionSubmitResponse:
+) -> ExtractionResponse:
     """Extract text from PDF using PyMuPDF."""
     await validate_pdf_file(file)
     file_path = await save_upload_file(file)
 
-    task = extract_pdf_pymupdf.delay(file_path)
+    try:
+        extractor = get_extractor("pymupdf")
+        text = extractor.extract(file_path)
 
-    return ExtractionSubmitResponse(
-        task_id=task.id,
-        status="PENDING",
-        tool=ExtractionTool.PYMUPDF,
-        message="PDF extraction task submitted successfully"
-    )
+        return ExtractionResponse(
+            status="success",
+            tool=ExtractionTool.PYMUPDF,
+            text=text,
+            error=None
+        )
+    except Exception as e:
+        return ExtractionResponse(
+            status="error",
+            tool=ExtractionTool.PYMUPDF,
+            text=None,
+            error=f"PyMuPDF extraction failed: {str(e)}"
+        )
+    finally:
+        delete_file(file_path)
 
 
 @router.post(
     "/pdfplumber",
-    response_model=ExtractionSubmitResponse,
-    status_code=202,
+    response_model=ExtractionResponse,
+    status_code=200,
     summary="Extract PDF using pdfplumber",
-    description="Submit a PDF for text extraction using pdfplumber. "
-                "Excellent for table extraction and detailed layout analysis."
+    description="Extract text from PDF using pdfplumber. "
+                "Excellent for table extraction and detailed layout analysis. "
+                "Returns results immediately (synchronous)."
 )
 async def extract_with_pdfplumber(
     file: UploadFile = File(..., description="PDF file to extract text from")
-) -> ExtractionSubmitResponse:
+) -> ExtractionResponse:
     """Extract text from PDF using pdfplumber."""
     await validate_pdf_file(file)
     file_path = await save_upload_file(file)
 
-    task = extract_pdf_pdfplumber.delay(file_path)
+    try:
+        extractor = get_extractor("pdfplumber")
+        text = extractor.extract(file_path)
 
-    return ExtractionSubmitResponse(
-        task_id=task.id,
-        status="PENDING",
-        tool=ExtractionTool.PDFPLUMBER,
-        message="PDF extraction task submitted successfully"
-    )
+        return ExtractionResponse(
+            status="success",
+            tool=ExtractionTool.PDFPLUMBER,
+            text=text,
+            error=None
+        )
+    except Exception as e:
+        return ExtractionResponse(
+            status="error",
+            tool=ExtractionTool.PDFPLUMBER,
+            text=None,
+            error=f"pdfplumber extraction failed: {str(e)}"
+        )
+    finally:
+        delete_file(file_path)
 
 
 @router.post(
     "/pypdf",
-    response_model=ExtractionSubmitResponse,
-    status_code=202,
+    response_model=ExtractionResponse,
+    status_code=200,
     summary="Extract PDF using pypdf",
-    description="Submit a PDF for text extraction using pypdf. "
-                "Lightweight library good for simple text extraction."
+    description="Extract text from PDF using pypdf. "
+                "Lightweight library good for simple text extraction. "
+                "Returns results immediately (synchronous)."
 )
 async def extract_with_pypdf(
     file: UploadFile = File(..., description="PDF file to extract text from")
-) -> ExtractionSubmitResponse:
+) -> ExtractionResponse:
     """Extract text from PDF using pypdf."""
     await validate_pdf_file(file)
     file_path = await save_upload_file(file)
 
-    task = extract_pdf_pypdf.delay(file_path)
+    try:
+        extractor = get_extractor("pypdf")
+        text = extractor.extract(file_path)
 
-    return ExtractionSubmitResponse(
-        task_id=task.id,
-        status="PENDING",
-        tool=ExtractionTool.PYPDF,
-        message="PDF extraction task submitted successfully"
-    )
+        return ExtractionResponse(
+            status="success",
+            tool=ExtractionTool.PYPDF,
+            text=text,
+            error=None
+        )
+    except Exception as e:
+        return ExtractionResponse(
+            status="error",
+            tool=ExtractionTool.PYPDF,
+            text=None,
+            error=f"pypdf extraction failed: {str(e)}"
+        )
+    finally:
+        delete_file(file_path)
 
 
 @router.post(
     "/pdfminer",
-    response_model=ExtractionSubmitResponse,
-    status_code=202,
+    response_model=ExtractionResponse,
+    status_code=200,
     summary="Extract PDF using pdfminer.six",
-    description="Submit a PDF for text extraction using pdfminer.six. "
-                "Deep text analysis with position information."
+    description="Extract text from PDF using pdfminer.six. "
+                "Deep text analysis with position information. "
+                "Returns results immediately (synchronous)."
 )
 async def extract_with_pdfminer(
     file: UploadFile = File(..., description="PDF file to extract text from")
-) -> ExtractionSubmitResponse:
+) -> ExtractionResponse:
     """Extract text from PDF using pdfminer.six."""
     await validate_pdf_file(file)
     file_path = await save_upload_file(file)
 
-    task = extract_pdf_pdfminer.delay(file_path)
+    try:
+        extractor = get_extractor("pdfminer")
+        text = extractor.extract(file_path)
 
-    return ExtractionSubmitResponse(
-        task_id=task.id,
-        status="PENDING",
-        tool=ExtractionTool.PDFMINER,
-        message="PDF extraction task submitted successfully"
-    )
-
-
-@router.get(
-    "/task/{task_id}",
-    response_model=TaskStatusResponse,
-    summary="Get task status and results",
-    description="Check the status of a PDF extraction task and retrieve results if completed.",
-    responses={
-        404: {"model": ErrorResponse, "description": "Task not found"}
-    }
-)
-async def get_task_status(task_id: str) -> TaskStatusResponse:
-    """Get the status and results of a PDF extraction task."""
-    task_result = AsyncResult(task_id, app=celery_app)
-
-    if not task_result:
-        raise HTTPException(status_code=404, detail="Task not found")
-
-    # Map Celery states to our TaskStatus enum
-    status = task_result.state
-
-    # Build response based on task state
-    if status == "PENDING":
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.PENDING,
-            result=None,
+        return ExtractionResponse(
+            status="success",
+            tool=ExtractionTool.PDFMINER,
+            text=text,
             error=None
         )
-    elif status == "STARTED":
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.STARTED,
-            result=None,
-            error=None
+    except Exception as e:
+        return ExtractionResponse(
+            status="error",
+            tool=ExtractionTool.PDFMINER,
+            text=None,
+            error=f"pdfminer extraction failed: {str(e)}"
         )
-    elif status == "SUCCESS":
-        result_data = task_result.result
-        extraction_result = ExtractionResult(
-            status=result_data.get("status", "success"),
-            tool=result_data.get("tool"),
-            text=result_data.get("text"),
-            error=result_data.get("error")
-        )
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.SUCCESS,
-            result=extraction_result,
-            error=None
-        )
-    elif status == "FAILURE":
-        error_msg = str(task_result.result) if task_result.result else "Task failed"
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.FAILURE,
-            result=None,
-            error=error_msg
-        )
-    elif status == "RETRY":
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.RETRY,
-            result=None,
-            error="Task is being retried"
-        )
-    else:
-        return TaskStatusResponse(
-            task_id=task_id,
-            status=TaskStatus.PENDING,
-            result=None,
-            error=None
-        )
+    finally:
+        delete_file(file_path)

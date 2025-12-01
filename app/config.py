@@ -7,19 +7,6 @@ class Settings(BaseSettings):
     app_name: str = "PDF Extraction Backend"
     debug: bool = False
 
-    # Redis settings
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-    redis_password: str | None = None
-
-    # Celery settings
-    celery_broker_url: str = "redis://localhost:6379/0"
-    celery_result_backend: str = "redis://localhost:6379/0"
-    celery_task_track_started: bool = True
-    celery_task_time_limit: int = 300  # 5 minutes
-    celery_result_expires: int = 3600  # 1 hour
-
     # File upload settings
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     allowed_extensions: set[str] = {".pdf"}

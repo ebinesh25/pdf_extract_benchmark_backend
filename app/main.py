@@ -38,6 +38,10 @@ async def root():
         "available_tools": ["pymupdf", "pdfplumber", "pypdf", "pdfminer"]
     }
 
+@app.get("/models")
+async def get_models():
+    """Get available models."""
+    return {"models": ["pymupdf", "pdfplumber", "pypdf", "pdfminer"]}
 
 @app.get("/health")
 async def health_check():
