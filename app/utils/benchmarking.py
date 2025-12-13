@@ -36,18 +36,17 @@ class BenchmarkEngine:
 
     @staticmethod
     def calculate_accuracy(ground_truth: str, extracted: str) -> float:
-        """Compute similarity between extracted text and ground truth."""
-                """
+        """Compute similarity between extracted text and ground truth
         Calculate similarity ratio between ground truth and extracted text.
         Returns a float between 0.0 and 1.0.
         """
-        if not ground_truth or not extracted_text:
+        if not ground_truth or not extracted:
             return 0.0
         
         # Normalize text for better comparison (optional, but recommended)
         # For now, we'll do simple whitespace normalization
         gt_normalized = " ".join(ground_truth.split())
-        ext_normalized = " ".join(extracted_text.split())
+        ext_normalized = " ".join(extracted.split())
         
         import difflib
         matcher = difflib.SequenceMatcher(None, gt_normalized, ext_normalized)
@@ -62,7 +61,7 @@ class BenchmarkEngine:
 
         async def run_benchmark(tool_name: ExtractionTool) -> BenchmarkResult:
             start_time = time.perf_counter()
-            extracted_text = None
+            extracted_text:str | None = None
             error_msg = None
 
             try:
@@ -93,6 +92,7 @@ class BenchmarkEngine:
                 execution_time_ms=round(exec_time_ms, 2),
                 accuracy_score=round(accuracy, 4) if accuracy else None,
                 extracted_text_length=len(extracted_text) if extracted_text else 0,
+                extracted_text=extracted_text,
                 error=error_msg,
                 features=TOOL_FEATURES.get(tool_name, [])
             )

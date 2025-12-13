@@ -29,24 +29,24 @@ app.include_router(benchmarking.router, prefix=settings.api_v1_prefix)
 
 MODELS_LIST = [
     {
-        name: "pymupdf",
-        description: "PyMuPDF (fitz) is a PDF library based on the MuPDF open source project."
-        tags: ["opensource"],
+        "name": "pymupdf",
+        "description": "PyMuPDF (fitz) is a PDF library based on the MuPDF open source project.",
+        "tags": ["opensource"],
     },
     {
-        name: "pdfplumber",
-        description: "pdfplumber is a PDF library based on the MuPDF open source project."
-        tags: ["OCR", "opensource"],
+        "name": "pdfplumber",
+        "description": "pdfplumber is a PDF library based on the MuPDF open source project.",
+        "tags": ["OCR", "opensource"],
     },
     {
-        name: "pypdf",
-        description: "pypdf is a PDF library based on the MuPDF open source project."
-        tags: ["opensource", "tables"],
+        "name": "pypdf",
+        "description": "pypdf is a PDF library based on the MuPDF open source project.",
+        "tags": ["opensource", "tables"],
     },
     {
-        name: "pdfminer",
-        description: "pdfminer is a PDF library based on the MuPDF open source project."
-        tags: ["opensource"],
+        "name": "pdfminer",
+        "description": "pdfminer is a PDF library based on the MuPDF open source project.",
+        "tags": ["opensource"],
     },
 ]
 

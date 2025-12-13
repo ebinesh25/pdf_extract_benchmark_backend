@@ -7,6 +7,7 @@ class BenchmarkResult(BaseModel):
     execution_time_ms: float
     accuracy_score: Optional[float] = None
     extracted_text_length: int
+    extracted_text: str | None
     error: Optional[str] = None
     
     # Static info

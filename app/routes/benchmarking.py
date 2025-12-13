@@ -26,7 +26,7 @@ async def benchmark_pdf(
     file_path = await save_upload_file(file)
     
     try:
-        results = BenchmarkEngine.benchmark_file(
+        results = await BenchmarkEngine.benchmark_file(
             file_path=file_path,
             tools=tools,
             ground_truth=ground_truth
