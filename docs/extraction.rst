@@ -51,6 +51,15 @@ PyMuPDF is a high-performance library for PDF extraction with the following feat
        print(f"Type: {item['type']}")
        print(f"Content: {item['content'][:100]}...")
 
+**Implementation**:
+
+The PyMuPDF extractor is implemented as follows:
+
+.. literalinclude:: ../app/utils/pdf_extractors.py
+   :language: python
+   :lines: 36-107
+   :caption: PyMuPDF extractor implementation
+
 pdfplumber
 ~~~~~~~~~~
 
@@ -84,6 +93,15 @@ pdfplumber excels at extracting structured data, particularly tables:
        if item['type'] == 'table':
            print("Table found:")
            print(item['content'])
+
+**Implementation**:
+
+The pdfplumber extractor is implemented as follows:
+
+.. literalinclude:: ../app/utils/pdf_extractors.py
+   :language: python
+   :lines: 110-176
+   :caption: pdfplumber extractor implementation
 
 pypdf
 ~~~~~
@@ -122,6 +140,15 @@ pypdf is a lightweight library focused on basic text extraction:
    full_text = '\n'.join(text_content)
    print(full_text)
 
+**Implementation**:
+
+The pypdf extractor is implemented as follows:
+
+.. literalinclude:: ../app/utils/pdf_extractors.py
+   :language: python
+   :lines: 179-230
+   :caption: pypdf extractor implementation
+
 pdfminer.six
 ~~~~~~~~~~~~
 
@@ -155,6 +182,15 @@ pdfminer.six provides deep text analysis with detailed positioning information:
        print(f"Content Type: {item['type']}")
        print(f"Content: {item['content'][:200]}...")
        print("---")
+
+**Implementation**:
+
+The pdfminer extractor is implemented as follows:
+
+.. literalinclude:: ../app/utils/pdf_extractors.py
+   :language: python
+   :lines: 233-259
+   :caption: pdfminer extractor implementation
 
 Response Format
 ---------------
@@ -258,6 +294,13 @@ Integration Examples
 
 Python Client
 ~~~~~~~~~~~~~
+
+The PDF extraction client can be implemented using the file validation and handling utilities:
+
+.. literalinclude:: ../app/utils/file_handler.py
+   :language: python
+   :lines: 11-38
+   :caption: PDF file validation implementation
 
 .. code-block:: python
 

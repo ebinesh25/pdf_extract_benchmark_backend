@@ -56,6 +56,22 @@ The benchmarking endpoint allows you to run multiple extraction tools on the sam
            -F 'tools=["pymupdf", "pdfplumber", "pypdf", "pdfminer"]' \
            -F "ground_truth=This is the expected text content..."
 
+   **Implementation**:
+
+   The benchmarking engine is implemented as follows:
+
+   .. literalinclude:: ../app/utils/benchmarking.py
+      :language: python
+      :lines: 35-134
+      :caption: BenchmarkEngine implementation
+
+   The benchmarking schemas are defined as:
+
+   .. literalinclude:: ../app/schemas/benchmarking.py
+      :language: python
+      :lines: 5-21
+      :caption: Benchmarking data models
+
 Response Format
 ---------------
 
@@ -225,7 +241,14 @@ Usage Examples
 --------------
 
 Python Benchmarking Client
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The benchmarking client can be implemented using the benchmarking engine:
+
+.. literalinclude:: ../app/utils/benchmarking.py
+   :language: python
+   :lines: 8-33
+   :caption: Tool features configuration
 
 .. code-block:: python
 

@@ -34,6 +34,15 @@ ExtractionTool Enum
       tool = ExtractionTool.PYMUPDF
       print(tool.value)  # Output: "pymupdf"
 
+   **Implementation**:
+
+   The ExtractionTool enum is defined as:
+
+   .. literalinclude:: ../app/schemas/extraction.py
+      :language: python
+      :lines: 10-16
+      :caption: ExtractionTool enum definition
+
 ExtractionContent Model
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -177,6 +186,15 @@ ErrorResponse Model
       {
         "detail": "Invalid file type. Allowed: .pdf"
       }
+
+   **Implementation**:
+
+   The ErrorResponse model is defined as:
+
+   .. literalinclude:: ../app/schemas/extraction.py
+      :language: python
+      :lines: 67-77
+      :caption: ErrorResponse model definition
 
 Benchmarking Schemas
 --------------------

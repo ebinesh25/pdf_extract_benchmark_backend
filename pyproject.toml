@@ -9,6 +9,7 @@ requires-python = ">=3.10"
 where = ["."]
 include = ["app*"]
 exclude = ["temp_uploads*"]
+
 dependencies = [
     "fastapi[standard]>=0.120.0",
     # PDF extraction libraries
