@@ -4,6 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["temp_uploads*"]
 dependencies = [
     "fastapi[standard]>=0.120.0",
     # PDF extraction libraries
@@ -21,4 +26,16 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pydantic-settings>=2.0.0",
     "motor>=3.7.1",
+]
+[project.optional-dependencies]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinxcontrib-openapi>=0.8.4",
+    "myst-parser>=2.0.0",
+]
+sphinx = [
+    "myst-parser>=4.0.1",
+    "sphinx-rtd-theme>=3.0.2",
+    "sphinxcontrib-openapi>=0.8.4",
 ]
