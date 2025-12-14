@@ -4,10 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.routes import extraction, benchmarking
 
+from app.dependencies import connect_to_mongo, close_mongo
+
 settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
+    debug=settings.debug,
     description="PDF extraction backend with multiple extraction tools",
     version="0.1.0",
     docs_url="/docs",
@@ -50,6 +53,13 @@ MODELS_LIST = [
     },
 ]
 
+@app.on_event("startup")
+async def startup():
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await close_mongo()
 
 @app.get("/")
 async def root():
@@ -71,3 +81,13 @@ async def get_models():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+@app.get("/health/db")
+async def db_health_check():
+    """Health check endpoint for Database."""
+    collections = await db.list_collection_names()
+    return {
+        "db": db.name,
+        "collections": collections
+    }

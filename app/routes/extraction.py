@@ -6,6 +6,7 @@ from fastapi import APIRouter, UploadFile, File
 
 from app.schemas.extraction import (
     ExtractionResponse,
+    ExtractionContent,
     ExtractionTool,
     ErrorResponse
 )
@@ -33,18 +34,23 @@ async def extract_with_pymupdf(
 
     try:
         extractor = get_extractor("pymupdf")
-        text = extractor.extract(file_path)
+        extracted_data = extractor.extract(file_path)
+
+        # Convert to API response format
+        data_items = [ExtractionContent(type=item["type"], content=item["content"]) for item in extracted_data]
 
         return ExtractionResponse(
             status="success",
             tool=ExtractionTool.PYMUPDF,
-            text=text,
+            data=data_items,
+            text=None,
             error=None
         )
     except Exception as e:
         return ExtractionResponse(
             status="error",
             tool=ExtractionTool.PYMUPDF,
+            data=None,
             text=None,
             error=f"PyMuPDF extraction failed: {str(e)}"
         )
@@ -70,18 +76,23 @@ async def extract_with_pdfplumber(
 
     try:
         extractor = get_extractor("pdfplumber")
-        text = extractor.extract(file_path)
+        extracted_data = extractor.extract(file_path)
+
+        # Convert to API response format
+        data_items = [ExtractionContent(type=item["type"], content=item["content"]) for item in extracted_data]
 
         return ExtractionResponse(
             status="success",
             tool=ExtractionTool.PDFPLUMBER,
-            text=text,
+            data=data_items,
+            text=None,
             error=None
         )
     except Exception as e:
         return ExtractionResponse(
             status="error",
             tool=ExtractionTool.PDFPLUMBER,
+            data=None,
             text=None,
             error=f"pdfplumber extraction failed: {str(e)}"
         )
@@ -107,18 +118,23 @@ async def extract_with_pypdf(
 
     try:
         extractor = get_extractor("pypdf")
-        text = extractor.extract(file_path)
+        extracted_data = extractor.extract(file_path)
+
+        # Convert to API response format
+        data_items = [ExtractionContent(type=item["type"], content=item["content"]) for item in extracted_data]
 
         return ExtractionResponse(
             status="success",
             tool=ExtractionTool.PYPDF,
-            text=text,
+            data=data_items,
+            text=None,
             error=None
         )
     except Exception as e:
         return ExtractionResponse(
             status="error",
             tool=ExtractionTool.PYPDF,
+            data=None,
             text=None,
             error=f"pypdf extraction failed: {str(e)}"
         )
@@ -144,18 +160,23 @@ async def extract_with_pdfminer(
 
     try:
         extractor = get_extractor("pdfminer")
-        text = extractor.extract(file_path)
+        extracted_data = extractor.extract(file_path)
+
+        # Convert to API response format
+        data_items = [ExtractionContent(type=item["type"], content=item["content"]) for item in extracted_data]
 
         return ExtractionResponse(
             status="success",
             tool=ExtractionTool.PDFMINER,
-            text=text,
+            data=data_items,
+            text=None,
             error=None
         )
     except Exception as e:
         return ExtractionResponse(
             status="error",
             tool=ExtractionTool.PDFMINER,
+            data=None,
             text=None,
             error=f"pdfminer extraction failed: {str(e)}"
         )

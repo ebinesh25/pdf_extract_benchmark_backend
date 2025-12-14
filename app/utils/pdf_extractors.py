@@ -1,11 +1,11 @@
 """
 PDF extraction utilities using various libraries.
-Each extractor returns plain text with all extracted content.
+Each extractor returns structured data with type and content fields.
 """
 
 import io
 from pathlib import Path
-from typing import Any
+from typing import List, Dict, Any
 
 # PyMuPDF (fitz)
 import fitz
@@ -37,7 +37,7 @@ class PyMuPDFExtractor:
     """Extract text, tables, images, and metadata using PyMuPDF (fitz)."""
 
     @staticmethod
-    def extract(file_path: str) -> str:
+    def extract(file_path: str) -> List[Dict[str, str]]:
         """
         Extract all content from PDF using PyMuPDF.
 
@@ -45,48 +45,46 @@ class PyMuPDFExtractor:
             file_path: Path to PDF file
 
         Returns:
-            Plain text with all extracted content
+            List of dictionaries with type and content fields
         """
-        output_parts = []
+        output: List[Dict[str, str]] = []
         doc = fitz.open(file_path)
 
         try:
             # Extract metadata
             metadata = doc.metadata
             if metadata:
-                output_parts.append("=== METADATA ===")
-                for key, value in metadata.items():
-                    if value:
-                        output_parts.append(f"{key}: {value}")
-                output_parts.append("")
+                metadata_str = "\n".join(f"{key}: {value}" for key, value in metadata.items() if value)
+                if metadata_str.strip():
+                    output.append({"type": "metadata", "content": metadata_str})
 
             # Process each page
             for page_num in range(len(doc)):
                 page = doc[page_num]
-                output_parts.append(f"=== PAGE {page_num + 1} ===")
 
                 # Extract text
                 text = page.get_text()
                 if text.strip():
-                    output_parts.append(text)
+                    output.append({"type": "text", "content": text})
 
                 # Extract tables
                 tables = page.find_tables()
                 if tables:
-                    output_parts.append("\n--- Tables ---")
                     for table_num, table in enumerate(tables, 1):
-                        output_parts.append(f"\nTable {table_num}:")
                         try:
                             table_data = table.extract()
+                            table_content = []
                             for row in table_data:
-                                output_parts.append(" | ".join(str(cell) if cell else "" for cell in row))
+                                row_text = " | ".join(str(cell) if cell else "" for cell in row)
+                                table_content.append(row_text)
+                            table_str = f"Table {table_num}:\n" + "\n".join(table_content)
+                            output.append({"type": "table", "content": table_str})
                         except Exception as e:
-                            output_parts.append(f"Error extracting table: {e}")
+                            output.append({"type": "table", "content": f"Error extracting table: {e}"})
 
                 # Extract images and try OCR
                 images = page.get_images()
                 if images:
-                    output_parts.append("\n--- Images ---")
                     for img_num, img in enumerate(images, 1):
                         try:
                             xref = img[0]
@@ -99,24 +97,21 @@ class PyMuPDFExtractor:
                                 image, lang=settings.ocr_language
                             )
                             if ocr_text.strip():
-                                output_parts.append(f"\nImage {img_num} OCR text:")
-                                output_parts.append(ocr_text)
+                                output.append({"type": "image", "content": f"Image {img_num} OCR text:\n{ocr_text}"})
                         except Exception as e:
-                            output_parts.append(f"Error processing image {img_num}: {e}")
-
-                output_parts.append("")
+                            output.append({"type": "image", "content": f"Error processing image {img_num}: {e}"})
 
         finally:
             doc.close()
 
-        return "\n".join(output_parts)
+        return output
 
 
 class PDFPlumberExtractor:
     """Extract text, tables, and metadata using pdfplumber."""
 
     @staticmethod
-    def extract(file_path: str) -> str:
+    def extract(file_path: str) -> List[Dict[str, str]]:
         """
         Extract all content from PDF using pdfplumber.
 
@@ -124,42 +119,42 @@ class PDFPlumberExtractor:
             file_path: Path to PDF file
 
         Returns:
-            Plain text with all extracted content
+            List of dictionaries with type and content fields
         """
-        output_parts = []
+        output: List[Dict[str, str]] = []
 
         with pdfplumber.open(file_path) as pdf:
             # Extract metadata
             if pdf.metadata:
-                output_parts.append("=== METADATA ===")
-                for key, value in pdf.metadata.items():
-                    if value:
-                        output_parts.append(f"{key}: {value}")
-                output_parts.append("")
+                metadata_str = "\n".join(f"{key}: {value}" for key, value in pdf.metadata.items() if value)
+                if metadata_str.strip():
+                    output.append({"type": "metadata", "content": metadata_str})
 
             # Process each page
             for page_num, page in enumerate(pdf.pages, 1):
-                output_parts.append(f"=== PAGE {page_num} ===")
-
                 # Extract text
                 text = page.extract_text()
                 if text:
-                    output_parts.append(text)
+                    output.append({"type": "text", "content": text})
 
                 # Extract tables
                 tables = page.extract_tables()
                 if tables:
-                    output_parts.append("\n--- Tables ---")
                     for table_num, table in enumerate(tables, 1):
-                        output_parts.append(f"\nTable {table_num}:")
+                        table_content = []
                         for row in table:
-                            output_parts.append(" | ".join(str(cell) if cell else "" for cell in row))
+                            # Join cells with pipe separator
+                            row_text = " | ".join(str(cell) if cell else "" for cell in row)
+                            if row_text.strip():
+                                table_content.append(row_text)
+                        if table_content:
+                            table_str = f"Table {table_num}:\n" + "\n".join(table_content)
+                            output.append({"type": "table", "content": table_str})
 
                 # Extract images and try OCR
                 try:
                     images = page.images
                     if images:
-                        output_parts.append("\n--- Images ---")
                         for img_num, img in enumerate(images, 1):
                             try:
                                 # Convert page to image and crop to image bbox
@@ -172,23 +167,20 @@ class PDFPlumberExtractor:
                                     cropped, lang=settings.ocr_language
                                 )
                                 if ocr_text.strip():
-                                    output_parts.append(f"\nImage {img_num} OCR text:")
-                                    output_parts.append(ocr_text)
+                                    output.append({"type": "image", "content": f"Image {img_num} OCR text:\n{ocr_text}"})
                             except Exception as e:
-                                output_parts.append(f"Error processing image {img_num}: {e}")
+                                output.append({"type": "image", "content": f"Error processing image {img_num}: {e}"})
                 except Exception as e:
-                    output_parts.append(f"Error extracting images: {e}")
+                    output.append({"type": "image", "content": f"Error extracting images: {e}"})
 
-                output_parts.append("")
-
-        return "\n".join(output_parts)
+        return output
 
 
 class PyPDFExtractor:
     """Extract text and metadata using pypdf."""
 
     @staticmethod
-    def extract(file_path: str) -> str:
+    def extract(file_path: str) -> List[Dict[str, str]]:
         """
         Extract all content from PDF using pypdf.
 
@@ -196,35 +188,30 @@ class PyPDFExtractor:
             file_path: Path to PDF file
 
         Returns:
-            Plain text with all extracted content
+            List of dictionaries with type and content fields
         """
-        output_parts = []
+        output: List[Dict[str, str]] = []
 
         with open(file_path, "rb") as file:
             reader = PdfReader(file)
 
             # Extract metadata
             if reader.metadata:
-                output_parts.append("=== METADATA ===")
-                for key, value in reader.metadata.items():
-                    if value:
-                        output_parts.append(f"{key}: {value}")
-                output_parts.append("")
+                metadata_str = "\n".join(f"{key}: {value}" for key, value in reader.metadata.items() if value)
+                if metadata_str.strip():
+                    output.append({"type": "metadata", "content": metadata_str})
 
             # Process each page
             for page_num, page in enumerate(reader.pages, 1):
-                output_parts.append(f"=== PAGE {page_num} ===")
-
                 # Extract text
                 text = page.extract_text()
                 if text:
-                    output_parts.append(text)
+                    output.append({"type": "text", "content": text})
 
                 # Extract images and try OCR
                 if hasattr(page, "images"):
                     images = page.images
                     if images:
-                        output_parts.append("\n--- Images ---")
                         for img_num, image in enumerate(images, 1):
                             try:
                                 # Get image data
@@ -236,21 +223,18 @@ class PyPDFExtractor:
                                     pil_image, lang=settings.ocr_language
                                 )
                                 if ocr_text.strip():
-                                    output_parts.append(f"\nImage {img_num} OCR text:")
-                                    output_parts.append(ocr_text)
+                                    output.append({"type": "image", "content": f"Image {img_num} OCR text:\n{ocr_text}"})
                             except Exception as e:
-                                output_parts.append(f"Error processing image {img_num}: {e}")
+                                output.append({"type": "image", "content": f"Error processing image {img_num}: {e}"})
 
-                output_parts.append("")
-
-        return "\n".join(output_parts)
+        return output
 
 
 class PDFMinerExtractor:
     """Extract text using pdfminer.six."""
 
     @staticmethod
-    def extract(file_path: str) -> str:
+    def extract(file_path: str) -> List[Dict[str, str]]:
         """
         Extract all content from PDF using pdfminer.six.
 
@@ -258,24 +242,21 @@ class PDFMinerExtractor:
             file_path: Path to PDF file
 
         Returns:
-            Plain text with all extracted content
+            List of dictionaries with type and content fields
         """
-        output_parts = []
+        output: List[Dict[str, str]] = []
 
         # Extract text with layout analysis
         laparams = LAParams()
         text = pdfminer_extract_text(file_path, laparams=laparams)
 
-        output_parts.append("=== EXTRACTED TEXT ===")
         if text:
-            output_parts.append(text)
+            output.append({"type": "text", "content": text})
 
         # Note: pdfminer.six is primarily for text extraction
         # For tables, images, and metadata, use other libraries
-        output_parts.append("\nNote: pdfminer.six specializes in text extraction.")
-        output_parts.append("For advanced features (tables, images), consider PyMuPDF or pdfplumber.")
 
-        return "\n".join(output_parts)
+        return output
 
 
 # Extractor factory
