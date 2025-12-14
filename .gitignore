@@ -48,6 +48,7 @@ coverage.xml
 # Environment
 .env
 .env.local
+.env.*.local
 
 # IDEs
 .vscode/
@@ -56,6 +57,7 @@ coverage.xml
 *.swo
 *~
 .DS_Store
+Thumbs.db
 
 # Project specific
 temp_uploads/
@@ -70,3 +72,50 @@ dump.rdb
 
 # Logs
 *.log
+
+# Documentation
+docs/_build/
+
+# UV package manager
+.uv/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
